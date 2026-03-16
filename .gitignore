@@ -1,0 +1,29 @@
+## [ Visual Studio ]
+# Pastas de compilação
+bin/
+obj/
+[Ouout]/
+[Ee]xtern/
+
+# Arquivos de usuário e cache do VS
+.vs/
+*.user
+*.userosscache
+*.sln.docstates
+
+# Testes e Cobertura
+TestResults/
+*.sequenced
+
+## [ .NET Core ]
+# Arquivos de segredos e configurações locais
+project.lock.json
+project.fragment.lock.json
+artifacts/
+**/appsettings.Development.json
+
+## [ Sistema Operacional ]
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
