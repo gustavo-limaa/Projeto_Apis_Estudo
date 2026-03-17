@@ -69,5 +69,20 @@ namespace Prateleira_Universal.Testes.TesteDeIntegracao
             // --- ASSERT ---
             result.Should().BeOfType<NotFoundResult>();
         }
+
+        [Fact]
+        public async Task DeletarProduto_DeveRetornarBadRequest_QuandoIdInvalido()
+        {
+            // --- ARRANGE ---
+            var options = CriarOpcoesBanco();
+            using var context = new AppDbContext(options);
+            var repo = new ProdutoRepository(context);
+            var controller = new ProdutoController(repo);
+            var produtoId = Guid.Empty; // ID inválido
+            // --- ACT ---
+            var result = await controller.DeletarProdutoAsync(produtoId);
+            // --- ASSERT ---
+            result.Should().BeOfType<BadRequestResult>();
+        }
     }
 }
