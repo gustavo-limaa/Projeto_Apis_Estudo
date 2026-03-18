@@ -1,12 +1,12 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
 	<PropertyGroup>
 		<TargetFramework>net9.0</TargetFramework>
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
-		<UserSecretsId>fe5f4d55-7d25-4498-bec0-647248e2dca7</UserSecretsId>
 		<DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
-	</PropertyGroup>
+	  <UserSecretsId>ab0d1b27-9e6d-447b-abe4-852ea678fb78</UserSecretsId>
+  </PropertyGroup>
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.0" />
