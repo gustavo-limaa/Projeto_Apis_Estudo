@@ -1,88 +1,116 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using FluentAssertions;
+using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.EntityFrameworkCore;
+using Prateleira_universal.Testes.ContextTest;
 using Prateleira_Universal.Data.context;
 using Prateleira_Universal.Repositorios;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Http.Json;
 using System.Text;
 using System.Threading.Tasks;
 using Xunit;
-using FluentAssertions;
 
 namespace Prateleira_Universal.Testes.TesteDeIntegracao
 {
+    [Collection("Produto Collection")] // 1. Usa a coleção que limpa o banco
     public class ProdutoIntegrationTests_DELETE
     {
-        private DbContextOptions<AppDbContext> CriarOpcoesBanco()
+        private readonly ProdutoTestsFixture _fixture;
+        private readonly HttpClient _client;
+
+        public ProdutoIntegrationTests_DELETE(ProdutoTestsFixture fixture)
         {
-            // Cria um banco de dados novo na memória a cada teste para não poluir
-            return new DbContextOptionsBuilder<AppDbContext>()
-                .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
-                .Options;
+            _fixture = fixture;
+            _client = _fixture.CreateClient(); // 2. O client fala com a API real
         }
 
         [Fact]
         public async Task DeletarProduto_DeveRemoverDoBancoReal()
         {
             // --- ARRANGE ---
-            var options = CriarOpcoesBanco();
-            using var context = new AppDbContext(options);
-            var repo = new ProdutoRepository(context);
-            var controller = new ProdutoController(repo);
+            // Usamos o Bogus que você criou na Fixture!
+            var produtoParaCriar = _fixture.GerarRequestValido();
+            // --- ARRANGE (Final do Setup) ---
+            var postResponse = await _client.PostAsJsonAsync("api/produtos", produtoParaCriar);
+            postResponse.EnsureSuccessStatusCode();
 
-            var produtoId = Guid.NewGuid();
+            var produtoCriado = await postResponse.Content.ReadFromJsonAsync<ProdutoBResponse>();
 
-            // Em vez de null, passamos um dicionário novo
-            var produto = new Produto(
-                produtoId,
-                "Erva Premium",
-                EnumCategoria.Erva_Mate,
-                "Descrição da erva",
-                25.0m,
-                new Dictionary<string, string> { { "Marca", "X" } } // Especificações preenchidas
-            );
+            // O "Check" de elite:
+            produtoCriado.Should().NotBeNull("O produto precisa ser criado no banco antes de testar o DELETE");
+            produtoCriado.ProdutoID.Should().NotBe(Guid.Empty);
 
-            context.Produtos.Add(produto);
-            await context.SaveChangesAsync();
+            var idParaDeletar = produtoCriado.ProdutoID;
+
             // --- ACT ---
-            var result = await controller.DeletarProdutoAsync(produtoId);
-
+            var result = await _client.DeleteAsync($"api/produtos/{idParaDeletar}");
             // --- ASSERT ---
-            result.Should().BeOfType<NoContentResult>();
+            result.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
-            // A prova de fogo: O banco de dados está vazio?
-            var produtoNoBanco = await context.Produtos.FindAsync(produtoId);
-            produtoNoBanco.Should().BeNull(); // Se for null, a integração funcionou!
+            // A prova de fogo:
+            // Se o produto foi deletado, o GET não deve encontrá-lo (404)
+            var getResponse = await _client.GetAsync($"/api/produtos/{idParaDeletar}");
+
+            // AJUSTE AQUI:
+            getResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
         }
 
         [Fact]
-        public async Task DeletarProduto_DeveRetornarNotFound_QuandoProdutoNaoExistir()
+        public async Task DeletarProduto_Inexistente_DeveRetornarNotFound()
         {
             // --- ARRANGE ---
-            var options = CriarOpcoesBanco();
-            using var context = new AppDbContext(options);
-            var repo = new ProdutoRepository(context);
-            var controller = new ProdutoController(repo);
-            var produtoId = Guid.NewGuid(); // ID que não existe no banco
+            var idInexistente = Guid.NewGuid();
             // --- ACT ---
-            var result = await controller.DeletarProdutoAsync(produtoId);
+            var result = await _client.DeleteAsync($"api/produtos/{idInexistente}");
             // --- ASSERT ---
-            result.Should().BeOfType<NotFoundResult>();
+            result.StatusCode.Should().Be(HttpStatusCode.NotFound);
         }
 
         [Fact]
-        public async Task DeletarProduto_DeveRetornarBadRequest_QuandoIdInvalido()
+        public async Task DeletarProduto_ComErroInterno_DeveRetornarInternalServerError()
         {
             // --- ARRANGE ---
-            var options = CriarOpcoesBanco();
-            using var context = new AppDbContext(options);
-            var repo = new ProdutoRepository(context);
-            var controller = new ProdutoController(repo);
-            var produtoId = Guid.Empty; // ID inválido
+            // Para simular um erro interno, podemos usar um ID que sabemos que causará um erro (ex: um ID malformado)
+            var idInvalido = 123123124;
             // --- ACT ---
-            var result = await controller.DeletarProdutoAsync(produtoId);
+            var result = await _client.DeleteAsync($"api/produtos/{idInvalido}");
             // --- ASSERT ---
-            result.Should().BeOfType<BadRequestResult>();
+            result.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        }
+
+        [Fact]
+        public async Task DeletarProduto_ID_Inexistente_DeveRetornarNotFound()
+        {
+            // --- ARRANGE ---
+            // Geramos um Guid válido (formato correto), mas que NUNCA foi criado no banco
+            var idQueNaoExiste = Guid.NewGuid();
+
+            // --- ACT ---
+            var result = await _client.DeleteAsync($"api/produtos/{idQueNaoExiste}");
+
+            // --- ASSERT ---
+            // Aqui testamos se o seu "if (produto is null)" está acordado!
+            result.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        }
+
+        [Fact]
+        public async Task DeletarProduto_Valido_DeveRetornarNoContent()
+        {
+            // --- ARRANGE ---
+            var produtoParaCriar = _fixture.GerarRequestValido();
+            var postResponse = await _client.PostAsJsonAsync("api/produtos", produtoParaCriar);
+            postResponse.EnsureSuccessStatusCode();
+            var produtoCriado = await postResponse.Content.ReadFromJsonAsync<ProdutoBResponse>();
+            produtoCriado.Should().NotBeNull();
+            produtoCriado.ProdutoID.Should().NotBe(Guid.Empty);
+            var idParaDeletar = produtoCriado.ProdutoID;
+            // --- ACT ---
+            var result = await _client.DeleteAsync($"api/produtos/{idParaDeletar}");
+            // --- ASSERT ---
+            result.StatusCode.Should().Be(HttpStatusCode.NoContent);
         }
     }
 }

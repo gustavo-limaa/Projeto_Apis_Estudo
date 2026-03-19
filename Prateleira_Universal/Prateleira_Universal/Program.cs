@@ -30,9 +30,15 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi(); // Gera o JSON
     app.MapScalarApiReference(); // Só isso! Sem parâmetros extras por enquanto
 }
-
-app.UseHttpsRedirection();
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+public partial class Program
+
+{ } // Necessário para os testes de integração acessarem o WebApplicationFactory

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Prateleira_universal.Testes.ContextTest;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -68,7 +69,7 @@ public class TesteProduto_GET
         repoMock.Setup(r => r.ObterPorIdAsync(produtoFake.ProdutoID)).ReturnsAsync(produtoFake);
         var controller = new ProdutoController(repoMock.Object);
         // --- ACT ---
-        var result = await controller.ObterPorId(produtoFake.ProdutoID);
+        var result = await controller.ObterPorIdAsync(produtoFake.ProdutoID);
         // --- ASSERT ---
         var okResult = result.Result.Should().BeOfType<OkObjectResult>().Subject;
         okResult.StatusCode.Should().Be(200);
@@ -84,7 +85,7 @@ public class TesteProduto_GET
         repoMock.Setup(r => r.ObterPorIdAsync(It.IsAny<Guid>())).ReturnsAsync((Produto)null);
         var controller = new ProdutoController(repoMock.Object);
         // --- ACT ---
-        var result = await controller.ObterPorId(Guid.NewGuid());
+        var result = await controller.ObterPorIdAsync(Guid.NewGuid());
         // --- ASSERT ---
         var notFoundResult = result.Result.Should().BeOfType<NotFoundResult>().Subject;
         notFoundResult.StatusCode.Should().Be(404);
@@ -98,7 +99,7 @@ public class TesteProduto_GET
         repoMock.Setup(r => r.ObterPorIdAsync(It.IsAny<Guid>())).ThrowsAsync(new Exception("Erro de teste"));
         var controller = new ProdutoController(repoMock.Object);
         // --- ACT ---
-        var result = await controller.ObterPorId(Guid.NewGuid());
+        var result = await controller.ObterPorIdAsync(Guid.NewGuid());
         // --- ASSERT ---
         var statusResult = result.Result.Should().BeOfType<ObjectResult>().Subject;
         statusResult.StatusCode.Should().Be(500);

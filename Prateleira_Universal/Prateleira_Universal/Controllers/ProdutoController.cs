@@ -3,7 +3,7 @@ using System.Net;
 
 namespace Prateleira_Universal.Controllers;
 
-[Route("api/[controller]")]
+[Route("api/produtos")]
 [ApiController]
 public class ProdutoController : ControllerBase
 {
@@ -51,14 +51,14 @@ public class ProdutoController : ControllerBase
 
             // 5. Retornamos o 201 Created com a rota de consulta
             return CreatedAtAction(
-                nameof(ObterPorId), // Use o nome exato do seu método GET por ID
+                nameof(ObterPorIdAsync), // Use o nome exato do seu método GET por ID
                 new { id = novoProduto.ProdutoID },
                 response
             );
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            return StatusCode(500, "Ocorreu um erro ao tentar criar o produto");
+            return StatusCode(500, ex.Message + " | " + ex.InnerException?.Message);
         }
     }
 
@@ -92,7 +92,7 @@ public class ProdutoController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<ProdutoBResponse>> ObterPorId(Guid id)
+    public async Task<ActionResult<ProdutoBResponse>> ObterPorIdAsync(Guid id)
     {
         try
         {
@@ -129,15 +129,13 @@ public class ProdutoController : ControllerBase
             {
                 return BadRequest();
             }
-            // Agora pedimos ao repositório
+
             var produto = await _repo.ObterPorIdAsync(id);
 
             if (produto is null) { return NotFound(); }
 
-            // O repo cuida da lógica de remoção
             await _repo.DeletarAsync(produto);
 
-            // E persiste a mudança
             var salvar = await _repo.SalvarAlteracoesAsync();
 
             if (!salvar) { return BadRequest(); }
