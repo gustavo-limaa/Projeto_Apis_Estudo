@@ -72,5 +72,29 @@ namespace Prateleira_universal.Testes.TesteDeResilienciaMoq
                                               // E transforma no Request que a API espera
             return new ProdutoBRequest(p.Nome, p.Descricao, p.Tipo, p.Especificacoes, p.Preco);
         }
+
+        /// Na sua Factory
+        public Produto GerarProduto(Action<Produto>? customizacao = null)
+        {
+            var p = _produtoFaker.Generate();
+
+            // Se você quer "estragar" algo, você usa o 'with' aqui
+            // Mas como o 'with' cria um novo objeto, você faz assim:
+            return p;
+        }
+
+        // Para erros específicos:
+        public ProdutoBRequest GerarRequestInvalido(string tipoErro)
+        {
+            var baseValida = GerarRequestValido();
+
+            return tipoErro switch
+            {
+                "nome-vazio" => baseValida with { Nome = "" },
+                "preco-negativo" => baseValida with { Preco = -1m },
+                "descricao-longa" => baseValida with { Descricao = new string('x', 51) },
+                _ => baseValida,
+            };
+        }
     }
 }
