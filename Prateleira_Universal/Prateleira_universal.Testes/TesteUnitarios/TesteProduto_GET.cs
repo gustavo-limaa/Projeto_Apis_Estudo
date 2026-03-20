@@ -33,17 +33,26 @@ public class TesteProduto_GET
     }
 
     [Fact]
-    public async Task ObterTodos_DeveRetornarNoContent_QuandoNaoExistiremProdutos()
+    public async Task ObterTodos_DeveRetornarListaVazia_QuandoNaoExistiremProdutos()
     {
         // --- ARRANGE ---
         var repoMock = new Mock<IProdutoRepository>();
+        // O Repositório retorna uma lista vazia, como o EF faria
         repoMock.Setup(r => r.ObterTodosAsync()).ReturnsAsync(new List<Produto>());
+
         var controller = new ProdutoController(repoMock.Object);
+
         // --- ACT ---
         var result = await controller.ObterTodosAsync();
+
         // --- ASSERT ---
-        var noContentResult = result.Result.Should().BeOfType<NoContentResult>().Subject;
-        noContentResult.StatusCode.Should().Be(204);
+        // 1. O resultado deve ser um OkObjectResult (Status 200)
+        var okResult = result.Result.Should().BeOfType<OkObjectResult>().Subject;
+        okResult.StatusCode.Should().Be(200);
+
+        // 2. O conteúdo dentro do OK deve ser uma lista e deve estar vazia
+        var listaResponse = okResult.Value.Should().BeAssignableTo<IEnumerable<ProdutoBResponse>>().Subject;
+        listaResponse.Should().BeEmpty();
     }
 
     [Fact]

@@ -11,6 +11,7 @@ using Moq;
 using Prateleira_Universal.Modelos.Enums;
 using Xunit;
 using Bogus.Extensions;
+using Prateleira_universal.Testes.ContextTest;
 
 namespace Prateleira_universal.Testes.ContextTest;
 
@@ -81,6 +82,11 @@ public class ProdutoTestsFixture : WebApplicationFactory<Program>, IAsyncLifetim
 
         using var command = new MySqlCommand(sql, Connectionstring);
         await command.ExecuteNonQueryAsync();
+    }
+
+    public void Resetarbanco()
+    {
+        ClearDataBaseAsnyc().GetAwaiter().GetResult();
     }
 }
 

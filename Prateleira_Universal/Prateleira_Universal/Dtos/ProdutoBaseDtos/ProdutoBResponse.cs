@@ -4,9 +4,9 @@ namespace Prateleira_Universal.Dtos.ProdutoBaseDtos;
 
 public record ProdutoBResponse(
     Guid ProdutoID, // O mesmo Guid da classe base!
-    string Nome,
-    string Descricao,
-    EnumCategoria Tipo,
-    decimal Preco,
+  [Required][MaxLength(50)] string Nome,
+   [Required][MaxLength(50)] string Descricao,
+   [Required] EnumCategoria Tipo,
+ [Required][Range(0.01, 999999)] decimal Preco,
     Dictionary<string, string> Especificacoes
 );

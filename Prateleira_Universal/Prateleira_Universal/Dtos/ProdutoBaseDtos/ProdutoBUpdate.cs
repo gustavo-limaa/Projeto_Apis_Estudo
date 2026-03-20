@@ -4,9 +4,9 @@ namespace Prateleira_Universal.Dtos.ProdutoBaseDtos;
 
 public record ProdutoBUpdate(
 
-    string Nome,
-    EnumCategoria Tipo,
-    decimal Preco,
-    string Descricao,
+  [Required][MaxLength(50)] string Nome,
+  [Required] EnumCategoria Tipo,
+ [Required][Range(0.01, 999999)] decimal Preco,
+   [Required][MaxLength(50)] string Descricao,
     Dictionary<string, string> Especificacoes
 );

@@ -3,9 +3,10 @@
 namespace Prateleira_Universal.Dtos.ProdutoBaseDtos;
 
 public record ProdutoBRequest
-    (string Nome,
-    string Descricao,
-    EnumCategoria Tipo,
+    (
+    [Required][MaxLength(50)] string Nome,
+    [Required][MaxLength(50)] string Descricao,
+    [Required] EnumCategoria Tipo,
     Dictionary<string, string> Especificacoes,
-    decimal Preco
+   [Required][Range(0.01, 999999)] decimal Preco
     );

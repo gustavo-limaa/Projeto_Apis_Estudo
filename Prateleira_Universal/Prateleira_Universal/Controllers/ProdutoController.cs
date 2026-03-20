@@ -69,25 +69,17 @@ public class ProdutoController : ControllerBase
         {
             var produtos = await _repo.ObterTodosAsync();
 
-            if (produtos is null || !produtos.Any())
-            {
-                return NoContent(); // Retorna o Status 204
-            }
-
+            // Se 'produtos' for vazio, o Select simplesmente não roda nenhuma vez
+            // e o 'response' já nasce como uma lista vazia.
             var response = produtos.Select(p => new ProdutoBResponse(
-                p.ProdutoID,
-                p.Nome,
-                p.Descricao,
-                p.Tipo,
-                p.Preco,
-                p.Especificacoes
+                p.ProdutoID, p.Nome, p.Descricao, p.Tipo, p.Preco, p.Especificacoes
             )).ToList();
 
             return Ok(response);
         }
         catch (Exception)
         {
-            return StatusCode(500, "Ocorreu um erro ao tentar recuperar os produtos");
+            return StatusCode(500, "Erro ao recuperar produtos");
         }
     }
 
