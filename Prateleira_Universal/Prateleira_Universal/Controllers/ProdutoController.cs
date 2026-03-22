@@ -1,4 +1,6 @@
-﻿using Prateleira_Universal.interfaces;
+﻿using Microsoft.AspNetCore.Http.HttpResults;
+using Prateleira_Universal.interfaces;
+using Refit;
 using System.Net;
 
 namespace Prateleira_Universal.Controllers;
@@ -172,5 +174,18 @@ public class ProdutoController : ControllerBase
         {
             return StatusCode(500, "Erro ao tentar atualizar o produto");
         }
+    }
+
+    [HttpGet]
+    public async Task<ActionResult<ProdutoBResponse>> ObterPorCategoria(Guid id, [Query] ProdutoBRequest request)
+    {
+        try
+        {
+            if (id == Guid.Empty) { return BadRequest(); }
+            if (request is null) { return BadRequest(); }
+
+            _repo.ObterPorIdAsync();
+        }
+        catch (Exception) { }
     }
 }

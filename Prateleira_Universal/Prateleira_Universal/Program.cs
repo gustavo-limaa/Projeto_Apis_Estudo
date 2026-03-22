@@ -1,7 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using Prateleira_Universal.Data.context;
 using Prateleira_Universal.interfaces;
+using Prateleira_Universal.interfaces.RefitApi;
 using Prateleira_Universal.Repositorios;
+using Refit;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -17,6 +19,9 @@ builder.Services.AddControllers(options =>
 {
     options.SuppressAsyncSuffixInActionNames = false;
 });
+
+builder.Services.AddRefitClient<IApiProduto>()
+    .ConfigureHttpClient(c => c.BaseAddress = new Uri("https://localhost:7014/"));
 
 builder.Services.AddScoped<IProdutoRepository, ProdutoRepository>();
 // No .NET 9+, o AddOpenApi já faz o trabalho de explorar os endpoints
@@ -40,5 +45,6 @@ app.MapControllers();
 app.Run();
 
 public partial class Program
+
 
 { } // Necessário para os testes de integração acessarem o WebApplicationFactory

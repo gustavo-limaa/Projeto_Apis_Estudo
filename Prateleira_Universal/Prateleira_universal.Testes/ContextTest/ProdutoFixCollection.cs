@@ -28,7 +28,7 @@ public class ProdutoTestsFixture : WebApplicationFactory<Program>, IAsyncLifetim
 
     public List<Produto> GerarListaValida(int quantidade)
     {
-        var faker = new Faker<Produto>()
+        var faker = new Faker<Produto>("pt_BR")
             .CustomInstantiator(f => new Produto(
                 Guid.NewGuid(),
                 f.Commerce.ProductName().ClampLength(max: 50),
@@ -43,7 +43,7 @@ public class ProdutoTestsFixture : WebApplicationFactory<Program>, IAsyncLifetim
 
     public ProdutoBRequest GerarRequestValido()
     {
-        var f = new Faker();
+        var f = new Faker("pt_BR");
         return new ProdutoBRequest(
             f.Commerce.ProductName().ClampLength(max: 50),                 // 1. Nome (string)
             f.Commerce.ProductDescription().ClampLength(max: 50),          // 2. Descricao (string)
@@ -87,6 +87,37 @@ public class ProdutoTestsFixture : WebApplicationFactory<Program>, IAsyncLifetim
     public void Resetarbanco()
     {
         ClearDataBaseAsnyc().GetAwaiter().GetResult();
+    }
+
+    // Método para gerar um Update com base em um Request (Muito útil!)
+    public ProdutoBUpdate GerarUpdateDe(ProdutoBResponse original, string novoNome = null)
+    {
+        var f = new Faker("pt_BR");
+        return new ProdutoBUpdate(
+            novoNome ?? f.Commerce.ProductName().ClampLength(max: 50), // Se eu não passar nome, ele inventa um
+            original.Tipo,
+            f.Finance.Amount(10, 500), // Preço novo aleatório
+            original.Descricao,
+            original.Especificacoes
+        );
+    }
+
+    // Método para gerar um ID inválido ou "sujo" para testes de erro
+    public Guid GerarIdInvalido() => Guid.Empty;
+
+    public Guid GerarIdAleatorio() => Guid.NewGuid();
+
+    public ProdutoBRequest GerarRequestComErro(string cenario)
+    {
+        var baseValida = GerarRequestValido();
+
+        return cenario switch
+        {
+            "nome-vazio" => baseValida with { Nome = "" },
+            "preco-negativo" => baseValida with { Preco = -1.50m },
+            "descricao-longa" => baseValida with { Descricao = new string('A', 51) },
+            _ => baseValida
+        };
     }
 }
 

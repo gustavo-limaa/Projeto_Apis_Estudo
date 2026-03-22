@@ -12,5 +12,7 @@ public interface IProdutoRepository
 
     Task DeletarAsync(Produto produto);
 
+    Task<IEnumerable<Produto>> ObterPorCategoriaAsync(EnumCategoria categoria);
+
     Task<bool> SalvarAlteracoesAsync();
 }

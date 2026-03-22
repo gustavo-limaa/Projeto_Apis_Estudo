@@ -62,7 +62,8 @@ namespace Prateleira_universal.Testes.TesteDeResilienciaMoq
             // Arrange - Aqui o Moq faz a mágica!
             _factory.RepoMock
                 .Setup(r => r.SalvarAlteracoesAsync())
-                .ReturnsAsync(false); // Simula falha ao salvar
+                .ReturnsAsync(false);
+            // Simula falha ao salvar
             var novoProduto = _factory._produtoFaker.Generate();
             var content = new StringContent(
                 System.Text.Json.JsonSerializer.Serialize(novoProduto),
