@@ -1,6 +1,10 @@
-﻿using Prateleira_Universal.interfaces;
+﻿using Prateleira_Universal.Adapters.Data.context;
+using Prateleira_Universal.Domain.interfaces;
+using Prateleira_Universal.Domain.Modelos;
+using Prateleira_Universal.Domain.Modelos.Enums;
+using Prateleira_Universal.interfaces;
 
-namespace Prateleira_Universal.Repositorios;
+namespace Prateleira_Universal.Adapters.Repositorios;
 
 public class ProdutoRepository : IProdutoRepository
 {

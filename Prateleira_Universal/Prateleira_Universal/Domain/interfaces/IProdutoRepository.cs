@@ -1,4 +1,7 @@
-﻿namespace Prateleira_Universal.interfaces;
+﻿using Prateleira_Universal.Domain.Modelos;
+using Prateleira_Universal.Domain.Modelos.Enums;
+
+namespace Prateleira_Universal.Domain.interfaces;
 
 public interface IProdutoRepository
 {

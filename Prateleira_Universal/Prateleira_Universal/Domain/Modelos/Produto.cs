@@ -1,6 +1,6 @@
-﻿using Prateleira_Universal.Modelos.Enums;
+﻿using Prateleira_Universal.Domain.Modelos.Enums;
 
-namespace Prateleira_Universal.Modelos;
+namespace Prateleira_Universal.Domain.Modelos;
 
 public class Produto : ProdutoBase
 {

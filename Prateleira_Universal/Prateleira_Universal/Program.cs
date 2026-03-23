@@ -1,8 +1,10 @@
 using Microsoft.EntityFrameworkCore;
-using Prateleira_Universal.Data.context;
+using Prateleira_Universal.Adapters.Data.context;
+using Prateleira_Universal.Adapters.Repositorios;
+using Prateleira_Universal.Domain.interfaces;
 using Prateleira_Universal.interfaces;
 using Prateleira_Universal.interfaces.RefitApi;
-using Prateleira_Universal.Repositorios;
+using Prateleira_Universal.UseCases;
 using Refit;
 using Scalar.AspNetCore;
 
@@ -24,6 +26,8 @@ builder.Services.AddRefitClient<IApiProduto>()
     .ConfigureHttpClient(c => c.BaseAddress = new Uri("https://localhost:7014/"));
 
 builder.Services.AddScoped<IProdutoRepository, ProdutoRepository>();
+
+builder.Services.AddScoped<CriarProdutoUseCase>();
 // No .NET 9+, o AddOpenApi já faz o trabalho de explorar os endpoints
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();

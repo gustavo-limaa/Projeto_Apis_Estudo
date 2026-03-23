@@ -1,7 +1,7 @@
-﻿using Prateleira_Universal.Modelos.Enums;
+﻿using Prateleira_Universal.Domain.Modelos.Enums;
 using System.ComponentModel.DataAnnotations;
 
-namespace Prateleira_Universal.Modelos;
+namespace Prateleira_Universal.Domain.Modelos;
 
 public abstract class ProdutoBase
 {

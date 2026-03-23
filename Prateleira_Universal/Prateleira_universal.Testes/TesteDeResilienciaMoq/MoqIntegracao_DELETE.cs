@@ -5,7 +5,7 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using Xunit;
-using Prateleira_Universal.Modelos;
+using Prateleira_Universal;
 
 namespace Prateleira_universal.Testes.TesteDeResilienciaMoq
 {
@@ -34,7 +34,7 @@ namespace Prateleira_universal.Testes.TesteDeResilienciaMoq
 
             // Degrau 2: A Controller tenta deletar e aqui a gente BOOM! 💥
             _factory.RepoMock
-                .Setup(r => r.DeletarAsync(It.IsAny<Prateleira_Universal.Modelos.Produto>()))
+                .Setup(r => r.DeletarAsync(It.IsAny<Produto>()))
                 .ThrowsAsync(new Exception("Pane no sistema!"));
 
             // 2. Act

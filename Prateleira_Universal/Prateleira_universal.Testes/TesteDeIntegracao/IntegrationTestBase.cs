@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Prateleira_Universal.Domain.interfaces;
 using Prateleira_Universal.interfaces.RefitApi;
 using Refit;
 using System;

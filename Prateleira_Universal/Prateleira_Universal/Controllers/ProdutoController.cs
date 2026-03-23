@@ -1,5 +1,10 @@
 ﻿using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc.Formatters.Xml;
+using Prateleira_Universal.Domain.interfaces;
 using Prateleira_Universal.interfaces;
+using Prateleira_Universal.UseCases;
+using Prateleira_Universal.UseCases.Dtos.ProdutoBaseDtos;
+using Prateleira_Universal.UseCases.Mappers;
 using Refit;
 using System.Net;
 
@@ -10,10 +15,12 @@ namespace Prateleira_Universal.Controllers;
 public class ProdutoController : ControllerBase
 {
     private readonly IProdutoRepository _repo;
+    private readonly CriarProdutoUseCase _criarProdutoUseCase;
 
-    public ProdutoController(IProdutoRepository produtoRepository)
+    public ProdutoController(IProdutoRepository produtoRepository, CriarProdutoUseCase criarProdutoUseCase)
     {
         _repo = produtoRepository;
+        _criarProdutoUseCase = criarProdutoUseCase;
     }
 
     [HttpPost]
@@ -23,39 +30,12 @@ public class ProdutoController : ControllerBase
 
         try
         {
-            // 1. Criamos a entidade (o ID pode ser gerado no construtor da classe ou aqui)
-            var novoid = Guid.NewGuid();
-            var novoProduto = new Produto(
-                novoid,
-                request.Nome,
-                request.Tipo,
-                request.Descricao,
-                request.Preco,
-                request.Especificacoes
-            );
+            var reponse = await _criarProdutoUseCase.ExecutarAsync(request);
 
-            // 2. Usamos o REPOSITÓRIO para adicionar
-            await _repo.AdicionarAsync(novoProduto);
-
-            // 3. Persistimos através do REPOSITÓRIO
-            var salvar = await _repo.SalvarAlteracoesAsync();
-
-            if (!salvar) { return BadRequest("Não foi possível salvar o produto"); }
-            // 4. Preparamos o DTO de resposta
-            var response = new ProdutoBResponse(
-                novoProduto.ProdutoID,
-                novoProduto.Nome,
-                novoProduto.Descricao,
-                novoProduto.Tipo,
-                novoProduto.Preco,
-                novoProduto.Especificacoes
-            );
-
-            // 5. Retornamos o 201 Created com a rota de consulta
             return CreatedAtAction(
                 nameof(ObterPorIdAsync), // Use o nome exato do seu método GET por ID
-                new { id = novoProduto.ProdutoID },
-                response
+                new { id = reponse.ProdutoID },
+                reponse
             );
         }
         catch (Exception ex)
@@ -73,9 +53,7 @@ public class ProdutoController : ControllerBase
 
             // Se 'produtos' for vazio, o Select simplesmente não roda nenhuma vez
             // e o 'response' já nasce como uma lista vazia.
-            var response = produtos.Select(p => new ProdutoBResponse(
-                p.ProdutoID, p.Nome, p.Descricao, p.Tipo, p.Preco, p.Especificacoes
-            )).ToList();
+            var response = produtos.Select(p => p.ToResponse()).ToList();
 
             return Ok(response);
         }
@@ -97,14 +75,7 @@ public class ProdutoController : ControllerBase
                 return NotFound();
             }
             // Transformamos a entidade no DTO de resposta
-            var response = new ProdutoBResponse(
-                produto.ProdutoID,
-                produto.Nome,
-                produto.Descricao,
-                produto.Tipo,
-                produto.Preco,
-                produto.Especificacoes
-            );
+            var response = produto.ToResponse();
 
             return Ok(response);
         }
@@ -176,16 +147,31 @@ public class ProdutoController : ControllerBase
         }
     }
 
-    [HttpGet]
-    public async Task<ActionResult<ProdutoBResponse>> ObterPorCategoria(Guid id, [Query] ProdutoBRequest request)
+    [HttpGet("categoria/{categoria}")] // Adicione a rota para o Refit achar
+    public async Task<ActionResult<IEnumerable<ProdutoBResponse>>> ObterPorCategoria(EnumCategoria categoria)
     {
         try
         {
-            if (id == Guid.Empty) { return BadRequest(); }
-            if (request is null) { return BadRequest(); }
+            // 1. Valida se o Enum existe (Segurança)
+            if (!Enum.IsDefined(typeof(EnumCategoria), categoria))
+            {
+                return BadRequest("Essa categoria de produto não existe no nosso catálogo.");
+            }
 
-            _repo.ObterPorIdAsync();
+            // 2. Busca no Repositório
+            var buscar = await _repo.ObterPorCategoriaAsync(categoria);
+
+            // 3. Converte para DTO usando o ctor que criamos
+            // Adicionamos os () no ToList()!
+            var response = buscar.Select(p => p.ToResponse()).ToList();
+
+            // 4. Se a lista estiver vazia, o 'response' será [] e o status será 200 OK
+            return Ok(response);
         }
-        catch (Exception) { }
+        catch (Exception)
+        {
+            // Logar o erro 'ex' seria o ideal aqui no futuro!
+            return StatusCode(500, "Erro interno ao buscar categoria.");
+        }
     }
 }

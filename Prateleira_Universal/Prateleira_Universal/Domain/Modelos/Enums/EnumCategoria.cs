@@ -1,4 +1,4 @@
-﻿namespace Prateleira_Universal.Modelos.Enums;
+﻿namespace Prateleira_Universal.Domain.Modelos.Enums;
 
 public enum EnumCategoria
 {

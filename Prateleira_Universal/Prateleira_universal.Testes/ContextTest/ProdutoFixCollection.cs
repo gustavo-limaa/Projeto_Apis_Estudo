@@ -8,10 +8,13 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestPlatform.TestHost;
 using MySqlConnector;
 using Moq;
-using Prateleira_Universal.Modelos.Enums;
+using Prateleira_Universal.Domain.Modelos.Enums;
 using Xunit;
 using Bogus.Extensions;
 using Prateleira_universal.Testes.ContextTest;
+using Prateleira_Universal.Domain.interfaces;
+using Prateleira_Universal.Domain.Modelos;
+using Prateleira_Universal.UseCases.Dtos.ProdutoBaseDtos;
 
 namespace Prateleira_universal.Testes.ContextTest;
 

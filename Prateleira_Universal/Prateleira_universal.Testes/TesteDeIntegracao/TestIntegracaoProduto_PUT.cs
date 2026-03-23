@@ -1,4 +1,6 @@
-﻿namespace Prateleira_Universal.Testes.TesteDeIntegracao
+﻿using Prateleira_Universal.UseCases.Dtos.ProdutoBaseDtos;
+
+namespace Prateleira_Universal.Testes.TesteDeIntegracao
 {
     [Collection("Produto Collection")]
     public class TestIntegracaoProduto_PUT

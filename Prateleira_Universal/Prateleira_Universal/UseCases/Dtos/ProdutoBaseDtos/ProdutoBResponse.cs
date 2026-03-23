@@ -1,6 +1,6 @@
-﻿using Prateleira_Universal.Modelos.Enums;
+﻿using Prateleira_Universal.Domain.Modelos.Enums;
 
-namespace Prateleira_Universal.Dtos.ProdutoBaseDtos;
+namespace Prateleira_Universal.UseCases.Dtos.ProdutoBaseDtos;
 
 public record ProdutoBResponse(
     Guid ProdutoID, // O mesmo Guid da classe base!

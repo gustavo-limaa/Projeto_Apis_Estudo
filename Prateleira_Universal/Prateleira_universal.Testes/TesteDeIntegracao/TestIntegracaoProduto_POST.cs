@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Prateleira_universal.Testes.ContextTest;
+using Prateleira_Universal.UseCases.Dtos.ProdutoBaseDtos;
 using System;
 using System.Collections.Generic;
 using System.Linq;

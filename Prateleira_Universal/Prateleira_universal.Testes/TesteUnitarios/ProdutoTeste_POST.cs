@@ -1,4 +1,5 @@
-﻿using Prateleira_Universal.Modelos.Enums;
+﻿using Prateleira_Universal.Domain.Modelos.Enums;
+using Prateleira_Universal.UseCases.Dtos.ProdutoBaseDtos;
 
 namespace Prateleira_universal.Testes.TesteUnitarios;
 

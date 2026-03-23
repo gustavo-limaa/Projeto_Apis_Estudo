@@ -1,4 +1,4 @@
 <Solution>
-  <Project Path="Prateleira_universal.Testes/Prateleira_universal.Testes.csproj" Id="255a7453-6082-41ff-9f80-0b1741a4c272" DisplayName="Prateleira_Universal.Testes" />
+  <Project Path="Prateleira_universal.Testes/Prateleira_universal.Testes.csproj" Id="255a7453-6082-41ff-9f80-0b1741a4c272" />
   <Project Path="Prateleira_Universal/Prateleira_Universal.csproj" />
 </Solution>

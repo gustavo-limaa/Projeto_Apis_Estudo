@@ -1,4 +1,6 @@
-﻿using Refit;
+﻿using Prateleira_Universal.Domain.Modelos.Enums;
+using Prateleira_Universal.UseCases.Dtos.ProdutoBaseDtos;
+using Refit;
 
 namespace Prateleira_Universal.interfaces.RefitApi;
 

@@ -2,6 +2,7 @@
 using Prateleira_universal.Testes.ContextTest;
 using Prateleira_Universal.Controllers;
 using Prateleira_Universal.Data.context;
+using Prateleira_Universal.UseCases.Dtos.ProdutoBaseDtos;
 using System;
 using System.Collections.Generic;
 using System.Linq;

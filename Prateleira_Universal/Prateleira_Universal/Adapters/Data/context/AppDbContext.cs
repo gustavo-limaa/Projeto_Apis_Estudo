@@ -1,9 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Prateleira_Universal.Domain.Modelos;
 using Prateleira_Universal.Dtos;
 using System.Collections.Generic;
 
-namespace Prateleira_Universal.Data.context;
+namespace Prateleira_Universal.Adapters.Data.context;
 
 public class AppDbContext : DbContext
 {
