@@ -1,20 +1,4 @@
-﻿using Bogus;
-using Bogus.Extensions;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.AspNetCore.TestHost;
-using Microsoft.Extensions.DependencyInjection;
-using Moq;
-using Prateleira_Universal.Domain.interfaces;
-using Prateleira_Universal.Domain.Modelos;
-using Prateleira_Universal.Domain.Modelos.Enums;
-using Prateleira_Universal.UseCases.Dtos.ProdutoBaseDtos;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Bogus.Extensions;
 
 namespace Prateleira_universal.Testes.TesteDeResilienciaMoq
 {

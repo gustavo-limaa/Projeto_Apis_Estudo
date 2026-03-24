@@ -1,18 +1,4 @@
-﻿using FluentAssertions;
-using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.EntityFrameworkCore;
-using Prateleira_universal.Testes.ContextTest;
-using Prateleira_Universal.Data.context;
-using Prateleira_Universal.Repositorios;
-using Prateleira_Universal.UseCases.Dtos.ProdutoBaseDtos;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Net.Http.Json;
-using System.Text;
-using System.Threading.Tasks;
-using Xunit;
+﻿using System.Net;
 
 namespace Prateleira_Universal.Testes.TesteDeIntegracao
 {

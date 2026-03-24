@@ -4,7 +4,6 @@ using Prateleira_Universal.Domain.interfaces;
 using Prateleira_Universal.interfaces;
 using Prateleira_Universal.UseCases;
 using Prateleira_Universal.UseCases.Dtos.ProdutoBaseDtos;
-using Prateleira_Universal.UseCases.Mappers;
 using Refit;
 using System.Net;
 
@@ -14,13 +13,21 @@ namespace Prateleira_Universal.Controllers;
 [ApiController]
 public class ProdutoController : ControllerBase
 {
-    private readonly IProdutoRepository _repo;
     private readonly CriarProdutoUseCase _criarProdutoUseCase;
+    private readonly ObterProdutoPorIdUseCase _obterProdutoPorIdUseCase;
+    private readonly ObterProdutosPorCategoriaUseCase _obterProdutosPorCategoriaUseCases;
+    private readonly ObterTodosProdutosUseCase _obterTodosProdutosUseCase;
+    private readonly AtualizarProdutoUseCase _atualizarProdutoUseCase;
+    private readonly DeletarProdutoUseCase _deletarProdutoUseCase;
 
-    public ProdutoController(IProdutoRepository produtoRepository, CriarProdutoUseCase criarProdutoUseCase)
+    public ProdutoController(CriarProdutoUseCase criarProdutoUseCase, ObterProdutoPorIdUseCase obterProdutoPorIdUseCase, ObterProdutosPorCategoriaUseCase obterProdutosPorCategoriaUseCases, ObterTodosProdutosUseCase obterTodosProdutosUseCase, AtualizarProdutoUseCase atualizarProdutoUseCase, DeletarProdutoUseCase deletarProdutoUseCase)
     {
-        _repo = produtoRepository;
         _criarProdutoUseCase = criarProdutoUseCase;
+        _obterProdutoPorIdUseCase = obterProdutoPorIdUseCase;
+        _obterProdutosPorCategoriaUseCases = obterProdutosPorCategoriaUseCases;
+        _obterTodosProdutosUseCase = obterTodosProdutosUseCase;
+        _atualizarProdutoUseCase = atualizarProdutoUseCase;
+        _deletarProdutoUseCase = deletarProdutoUseCase;
     }
 
     [HttpPost]
@@ -49,13 +56,9 @@ public class ProdutoController : ControllerBase
     {
         try
         {
-            var produtos = await _repo.ObterTodosAsync();
+            var produtos = await _obterTodosProdutosUseCase.ExecutarAsync();
 
-            // Se 'produtos' for vazio, o Select simplesmente não roda nenhuma vez
-            // e o 'response' já nasce como uma lista vazia.
-            var response = produtos.Select(p => p.ToResponse()).ToList();
-
-            return Ok(response);
+            return Ok(produtos);
         }
         catch (Exception)
         {
@@ -68,16 +71,13 @@ public class ProdutoController : ControllerBase
     {
         try
         {
-            var produto = await _repo.ObterPorIdAsync(id);
+            var produto = await _obterProdutoPorIdUseCase.ExecutarAsync(id);
 
             if (produto is null)
             {
                 return NotFound();
             }
-            // Transformamos a entidade no DTO de resposta
-            var response = produto.ToResponse();
-
-            return Ok(response);
+            return Ok(produto);
         }
         catch (Exception)
         {
@@ -90,22 +90,16 @@ public class ProdutoController : ControllerBase
     {
         try
         {
-            if (id == Guid.Empty)
-            {
-                return BadRequest();
-            }
+            if (id == Guid.Empty) return BadRequest("ID inválido");
 
-            var produto = await _repo.ObterPorIdAsync(id);
+            // O UseCase cuida de buscar, validar e deletar
+            await _deletarProdutoUseCase.ExecutarAsync(id);
 
-            if (produto is null) { return NotFound(); }
-
-            await _repo.DeletarAsync(produto);
-
-            var salvar = await _repo.SalvarAlteracoesAsync();
-
-            if (!salvar) { return BadRequest(); }
-
-            return NoContent();
+            return NoContent(); // 204 Sucesso sem conteúdo
+        }
+        catch (KeyNotFoundException) // Se o UseCase não achar o produto
+        {
+            return NotFound();
         }
         catch (Exception)
         {
@@ -116,57 +110,44 @@ public class ProdutoController : ControllerBase
     [HttpPut("{id}")]
     public async Task<ActionResult> AtualizarProdutoAsync(Guid id, [FromBody] ProdutoBUpdate request)
     {
+        // Validação básica de entrada
+        if (id == Guid.Empty || request is null) return BadRequest("Dados inválidos.");
+
         try
         {
-            if (request is null) { return BadRequest(); }
+            // O Controller apenas dá a ordem
+            var produto = await _atualizarProdutoUseCase.executarAsync(id, request);
 
-            if (id == Guid.Empty)
-            {
-                return BadRequest();
-            }
-
-            var produto = await _repo.ObterPorIdAsync(id);
-
-            if (produto is null) { return NotFound(); }
-
-            produto.Nome = request.Nome;
-            produto.Descricao = request.Descricao;
-            produto.Tipo = request.Tipo;
-            produto.Preco = request.Preco;
-            produto.Especificacoes = request.Especificacoes;
-
-            await _repo.AtualizarAsync(produto);
-            var salvar = await _repo.SalvarAlteracoesAsync();
-            if (!salvar) { return BadRequest(); }
-
-            return NoContent(); // Status 204
+            return NoContent(); // 204 Sucesso
         }
-        catch (Exception)
+        catch (KeyNotFoundException)
         {
-            return StatusCode(500, "Erro ao tentar atualizar o produto");
+            // Se o UseCase não achar o produto, ele lança essa exceção e o Controller retorna 404
+            return NotFound("Produto não encontrado.");
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"Erro ao tentar atualizar: {ex.Message}");
         }
     }
 
     [HttpGet("categoria/{categoria}")] // Adicione a rota para o Refit achar
     public async Task<ActionResult<IEnumerable<ProdutoBResponse>>> ObterPorCategoria(EnumCategoria categoria)
     {
+        if (!Enum.IsDefined(typeof(EnumCategoria), categoria))
+        {
+            return BadRequest("Essa categoria de produto não existe no nosso catálogo.");
+        }
+
         try
         {
-            // 1. Valida se o Enum existe (Segurança)
-            if (!Enum.IsDefined(typeof(EnumCategoria), categoria))
-            {
-                return BadRequest("Essa categoria de produto não existe no nosso catálogo.");
-            }
+            var reponse = await _obterProdutosPorCategoriaUseCases.ExecutarAsync(categoria);
 
-            // 2. Busca no Repositório
-            var buscar = await _repo.ObterPorCategoriaAsync(categoria);
-
-            // 3. Converte para DTO usando o ctor que criamos
-            // Adicionamos os () no ToList()!
-            var response = buscar.Select(p => p.ToResponse()).ToList();
-
-            // 4. Se a lista estiver vazia, o 'response' será [] e o status será 200 OK
-            return Ok(response);
+            return Ok(reponse);
+        }
+        catch (ArgumentException ex) // Se a categoria for inválida
+        {
+            return BadRequest(ex.Message);
         }
         catch (Exception)
         {

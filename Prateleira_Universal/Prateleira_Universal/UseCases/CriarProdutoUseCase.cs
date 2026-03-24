@@ -15,10 +15,15 @@ public class CriarProdutoUseCase
     {
         ArgumentNullException.ThrowIfNull(dto);
 
+        if (string.IsNullOrWhiteSpace(dto.Nome))
+            throw new ArgumentException("O nome do produto é obrigatório.", nameof(dto.Nome));
+
         var entity = dto.ToEntity();
 
         await _Repo.AdicionarAsync(entity);
-        await _Repo.SalvarAlteracoesAsync();
+
+        var salvar = await _Repo.SalvarAlteracoesAsync();
+        if (!salvar) return null;
 
         return entity.ToResponse();
     }

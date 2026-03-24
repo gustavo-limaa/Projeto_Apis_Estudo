@@ -28,7 +28,11 @@ builder.Services.AddRefitClient<IApiProduto>()
 builder.Services.AddScoped<IProdutoRepository, ProdutoRepository>();
 
 builder.Services.AddScoped<CriarProdutoUseCase>();
-// No .NET 9+, o AddOpenApi já faz o trabalho de explorar os endpoints
+builder.Services.AddScoped<AtualizarProdutoUseCase>();
+builder.Services.AddScoped<DeletarProdutoUseCase>(); // O que estamos fazendo agora
+builder.Services.AddScoped<ObterProdutoPorIdUseCase>();
+builder.Services.AddScoped<ObterProdutosPorCategoriaUseCase>();
+builder.Services.AddScoped<ObterTodosProdutosUseCase>();// No .NET 9+, o AddOpenApi já faz o trabalho de explorar os endpoints
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 

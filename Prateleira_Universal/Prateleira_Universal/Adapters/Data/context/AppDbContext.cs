@@ -1,8 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
-using Prateleira_Universal.Domain.Modelos;
-using Prateleira_Universal.Dtos;
-using System.Collections.Generic;
+﻿using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace Prateleira_Universal.Adapters.Data.context;
 
