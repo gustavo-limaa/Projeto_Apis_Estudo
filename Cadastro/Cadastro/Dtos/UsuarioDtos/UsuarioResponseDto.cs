@@ -1,4 +1,6 @@
-﻿namespace Cadastro.Dtos.UsuarioDtos;
+﻿using Cadastro.Modelos;
+
+namespace Cadastro.Dtos.UsuarioDtos;
 
 public record UsuarioResponseDto(
     Guid Id,

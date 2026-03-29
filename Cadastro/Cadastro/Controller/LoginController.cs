@@ -1,49 +1,33 @@
-﻿using Cadastro.Dados;
-using Cadastro.Dtos.LoginDtos;
-using Cadastro.Dtos.UsuarioDtos;
-using Microsoft.AspNetCore.Http;
+﻿using Cadastro.Dtos.LoginDtos;
+using Cadastro.UseCases.LoginCases;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
-namespace Cadastro.Controller
+[Route("api/[controller]")]
+[ApiController]
+public class LoginController : ControllerBase
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class LoginController : ControllerBase
+    private readonly LoginUsuarioUseCase _loginUseCase;
+
+    public LoginController(LoginUsuarioUseCase loginUseCase)
     {
-        private readonly AppDbContext _context;
+        _loginUseCase = loginUseCase;
+    }
 
-        public LoginController(AppDbContext context)
+    [HttpPost("login")]
+    public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
+    {
+        var resultado = await _loginUseCase.ExecutarAsync(loginDto);
+
+        if (!resultado.IsSuccess)
         {
-            _context = context;
+            // Unauthorized (401) é o código correto para erro de login
+            return Unauthorized(new { Message = resultado.ErrorMessage });
         }
 
-        [HttpPost("login")]
-        public async Task<IActionResult> Login(LoginDto loginDto)
+        return Ok(new
         {
-            // 1. Busca o usuário pelo e-mail
-            var usuario = await _context.Usuarios
-                .FirstOrDefaultAsync(u => u.Email == loginDto.Email && u.Ativo);
-
-            // 2. Verifica se o usuário existe e se a senha bate
-            // Importante: Se você usou Hash, aqui você compararia o Hash!
-            if (usuario is null || usuario.Senha != loginDto.Senha)
-            {
-                // Regra de ouro: Mensagem genérica para segurança
-                return Unauthorized("E-mail ou senha inválidos.");
-            }
-
-            // 3. Se deu tudo certo, por enquanto retornamos o usuário
-            // No futuro, aqui você geraria um TOKEN JWT
-            var resposta = new UsuarioResponseDto(
-                usuario.Id,
-                usuario.Nome!,
-                usuario.Email!,
-                usuario.DataCriacao,
-                usuario.Ativo
-            );
-
-            return Ok(new { Mensagem = "Login realizado com sucesso!", Usuario = resposta });
-        }
+            Mensagem = "Login realizado com sucesso!",
+            Usuario = resultado.Value
+        });
     }
 }

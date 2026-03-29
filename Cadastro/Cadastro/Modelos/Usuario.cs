@@ -16,8 +16,8 @@ public class Usuario : EntidadeBase, IStatus
     public string? Senha { get; set; }
 
     [Required, EmailAddress]
-    public string? Email { get; set; }
+    public ValueEmail? Email { get; set; }
 
-    public bool Ativo { get; set; } = true;
-    public virtual ICollection<Livro> Livros { get; set; } = new List<Livro>();
+    [Required]
+    public bool Ativo { get; set; } = true; public virtual ICollection<Livro> Livros { get; set; } = new List<Livro>();
 }

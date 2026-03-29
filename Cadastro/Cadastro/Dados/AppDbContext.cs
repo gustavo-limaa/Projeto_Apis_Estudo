@@ -19,10 +19,16 @@ namespace Cadastro.Dados
         // Aqui é onde configuramos as regras de negócio do banco (Fluent API)
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            // 1. Garantir que o Email do Usuário seja ÚNICO no banco
+            modelBuilder.Entity<Usuario>()
+               .Property(u => u.Email)
+                     .HasConversion(
+                  e => e.Valor,              // Como vai pro banco (string)
+                   v => new ValueEmail(v)          // Como volta do banco (Objeto Email)
+                  ).HasMaxLength(255).IsRequired();
+
             modelBuilder.Entity<Usuario>()
                 .HasIndex(u => u.Email)
-                .IsUnique();
+                .IsUnique(); // Garante que o email seja único
 
             // 2. Configurar o relacionamento 1:N (Um usuário tem muitos livros)
             modelBuilder.Entity<Livro>()
@@ -43,6 +49,11 @@ namespace Cadastro.Dados
             foreach (var entrada in entradas)
             {
                 ((EntidadeBase)entrada.Entity).DataCriacao = DateTime.UtcNow;
+
+                if (((EntidadeBase)entrada.Entity).Id == Guid.Empty)
+                {
+                    ((EntidadeBase)entrada.Entity).Id = Guid.NewGuid();
+                }
             }
 
             return base.SaveChangesAsync(cancellationToken);

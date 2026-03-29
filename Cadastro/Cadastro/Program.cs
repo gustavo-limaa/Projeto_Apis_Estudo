@@ -1,4 +1,8 @@
 using Cadastro.Dados;
+using Cadastro.Intefaces;
+using Cadastro.Repositorios;
+using Cadastro.UseCases.LoginCases;
+using Cadastro.UseCases.UsuarioCases;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -10,6 +14,14 @@ builder.Services.AddSwaggerGen();
 // No Program.cs
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseInMemoryDatabase("LivrariaEstudoDB"));
+
+builder.Services.AddScoped<IRepositorioUsuario, RepoUsuario>();
+builder.Services.AddScoped<CriarUsuarioUseCase>();
+builder.Services.AddScoped<AtualizarUsuarioUseCases>();
+builder.Services.AddScoped<ObterPorIdUsuarioUseCases>();
+builder.Services.AddScoped<DeletarUsuarioUseCases>();
+builder.Services.AddScoped<ListarTodosUsuarioUseCases>();
+builder.Services.AddScoped<LoginUsuarioUseCase>();
 
 // Add services to the container.
 

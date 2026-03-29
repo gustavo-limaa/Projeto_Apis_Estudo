@@ -1,119 +1,121 @@
 ﻿using Cadastro.Dados;
 using Cadastro.Dtos.UsuarioDtos;
 using Cadastro.Modelos;
+using Cadastro.UseCases.UsuarioCases;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace Cadastro.Controller
 {
-    [Route("api/[controller]")]
     [ApiController]
+    [Route("api/[controller]")]
     public class UsuarioController : ControllerBase
     {
-        private readonly AppDbContext _context;
+        // Injetamos apenas os Casos de Uso que vamos usar
+        private readonly CriarUsuarioUseCase _criarUseCase;
 
-        public UsuarioController(AppDbContext context)
+        private readonly ListarTodosUsuarioUseCases _listarTodosUsuarioUseCases;
+        private readonly DeletarUsuarioUseCases _deletarUsuarioUseCases;
+        private readonly AtualizarUsuarioUseCases _atualizarUseCase;
+        private readonly ObterPorIdUsuarioUseCases _obterUseCase;
+
+        public UsuarioController(
+            CriarUsuarioUseCase criarUseCase,
+            AtualizarUsuarioUseCases atualizarUseCase,
+            ObterPorIdUsuarioUseCases obterUseCase,
+            ListarTodosUsuarioUseCases listarTodosUsuarioUseCases,
+            DeletarUsuarioUseCases deletarUsuarioUseCases)
         {
-            _context = context;
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> Listar()
-        {
-            var usuarios = await _context.Usuarios.ToListAsync();
-
-            if (usuarios is not null && usuarios.Any())
-            {
-                var resposta = usuarios.Select(u => new UsuarioResponseDto
-                (
-                   u.Id,
-                   u.Nome!,
-                   u.Email!,
-                   u.DataCriacao,
-                   u.Ativo
-
-                )).ToList();
-
-                return Ok(resposta);
-            }
-
-            return NotFound("Usuario nao encontrado");
+            _criarUseCase = criarUseCase;
+            _atualizarUseCase = atualizarUseCase;
+            _obterUseCase = obterUseCase;
+            _listarTodosUsuarioUseCases = listarTodosUsuarioUseCases;
+            _deletarUsuarioUseCases = deletarUsuarioUseCases;
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> ObterPorId(Guid id)
         {
-            var usuario = await _context.Usuarios.FindAsync(id);
-
-            if (usuario is not null)
+            if (id == Guid.Empty)
             {
-                var resposta = new UsuarioResponseDto(
-                    usuario.Id,
-                    usuario.Nome!,
-                    usuario.Email!,
-                    usuario.DataCriacao,
-                    usuario.Ativo
-                );
-                return Ok(resposta);
+                return BadRequest(new { Message = "Id inválido." });
             }
-            return NotFound("Usuario nao encontrado");
+            // O UseCase resolve a busca e a conversão para DTO
+            var resultado = await _obterUseCase.ExecutarAsync(id);
+
+            if (!resultado.IsSuccess)
+            {
+                return NotFound(new { Message = resultado.ErrorMessage });
+            }
+
+            return Ok(resultado.Value);
+        }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Atualizar(Guid id, [FromBody] UsuarioUpdateDto dto)
+        {
+            if (id == Guid.Empty)
+            {
+                return BadRequest(new { Message = "Id inválido." });
+            }
+            // Se o e-mail no DTO for inválido, o UseCase (via Value Object) estoura o erro aqui!
+            var resultado = await _atualizarUseCase.ExecutarAsync(id, dto);
+
+            if (!resultado.IsSuccess)
+            {
+                return NotFound(new { Message = resultado.ErrorMessage });
+            }
+            return Ok(resultado.Value);
         }
 
         [HttpPost]
-        public async Task<IActionResult> Criar(UsuarioCreatDto usuarioDto)
+        public async Task<IActionResult> Criar([FromBody] UsuarioCreatDto dto)
         {
-            var usuario = new Usuario
+            // 1. Chama o UseCase
+            var resultado = await _criarUseCase.ExecutarAsync(dto);
+
+            // 2. Se o envelope diz que falhou, retorna o erro amigável
+            if (!resultado.IsSuccess)
             {
-                Nome = usuarioDto.Nome,
-                Email = usuarioDto.Email,
-                Senha = usuarioDto.Senha,
-
-                Ativo = true
-            };
-            _context.Usuarios.Add(usuario);
-
-            await _context.SaveChangesAsync();
-
-            var resposta = new UsuarioResponseDto(
-                usuario.Id,
-                usuario.Nome!,
-                usuario.Email!,
-                usuario.DataCriacao,
-                usuario.Ativo
-            );
-            return CreatedAtAction(nameof(ObterPorId), new { id = usuario.Id }, resposta);
-        }
-
-        [HttpPut]
-        public async Task<IActionResult> Atualizar(UsuarioUpdateDto usuarioDto)
-        {
-            var usuario = await _context.Usuarios.FindAsync(usuarioDto.Id);
-
-            if (usuario is not null)
-            {
-                usuario.Nome = usuarioDto.Nome;
-                usuario.Email = usuarioDto.Email;
-                usuario.Ativo = usuarioDto.Ativo;
-
-                _context.Usuarios.Update(usuario);
-                await _context.SaveChangesAsync();
-                return NoContent();
+                return BadRequest(new { Message = resultado.ErrorMessage });
             }
-            return NotFound("Usuario nao encontrado");
+
+            // 3. O sucesso! Pegamos o ID de dentro do '.Value' (que é um UsuarioResponseDto)
+            return CreatedAtAction(
+                actionName: nameof(ObterPorId),
+                routeValues: new { id = resultado.Value.Id }, // AQUI ESTÁ O ID!
+                value: resultado.Value // Retorna o DTO completo para o usuário
+            );
         }
 
-        [HttpDelete]
+        [HttpGet]
+        public async Task<IActionResult> ListarTodos()
+        {
+            var resultado = await _listarTodosUsuarioUseCases.ExecutarAsync();
+
+            if (!resultado.IsSuccess)
+            {
+                return NotFound(new { Message = resultado.ErrorMessage });
+            }
+
+            return Ok(resultado.Value);
+        }
+
+        [HttpDelete("{id}")]
         public async Task<IActionResult> Deletar(Guid id)
         {
-            var usuario = await _context.Usuarios.FindAsync(id);
-            if (usuario is not null)
+            if (id == Guid.Empty)
             {
-                _context.Usuarios.Remove(usuario);
-                await _context.SaveChangesAsync();
-                return NoContent();
+                return BadRequest(new { Message = "Id inválido." });
             }
-            return NotFound("Usuario nao encontrado");
+
+            var resultado = await _deletarUsuarioUseCases.ExecutarAsync(id);
+            if (!resultado.IsSuccess)
+            {
+                return NotFound(new { Message = resultado.ErrorMessage });
+            }
+            return NoContent();
         }
     }
 }

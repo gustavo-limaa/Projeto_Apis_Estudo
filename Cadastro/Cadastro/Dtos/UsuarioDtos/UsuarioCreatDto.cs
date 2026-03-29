@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using Cadastro.Modelos;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
 namespace Cadastro.Dtos.UsuarioDtos;
