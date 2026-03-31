@@ -1,6 +1,7 @@
 ﻿using Cadastro.Dados;
 using Cadastro.Dtos.LivroDtos;
 using Cadastro.Modelos;
+using Cadastro.UseCases.LivrosCases;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,122 +11,43 @@ namespace Cadastro.Controller
     [Route("api/[controller]")]
     public class LivrosController : ControllerBase
     {
-        private readonly AppDbContext _context;
-
-        public LivrosController(AppDbContext context)
-        {
-            _context = context;
-        }
-
         [HttpGet]
-        public async Task<IActionResult> Listar()
+        public async Task<ActionResult> ListarTodosAsync([FromServices] LivroObterTodosUsecases usecases)
         {
-            var livros = await _context.Livros.ToListAsync();
-
-            if (livros is not null && livros.Any())
-            {
-                var resposta = livros.Select(l =>
-                {
-                    string titulo = l.Titulo!;
-                    return new LivroResponseDto(
-                                    l.Id,
-                                    titulo,
-                                    l.Autor!,
-                                    l.Preco,
-                                    l.Descricao,
-                                    l.DataCriacao,
-                                    l.Ativo
-                                    );
-                }).ToList();
-
-                return Ok(resposta);
-            }
-            return NotFound("Nenhum livro encontrado.");
-        }
-
-        [HttpGet("{id}")]
-        public async Task<IActionResult> ObterPorId(Guid id)
-        {
-            var livro = await _context.Livros.FindAsync(id);
-            if (livro is not null)
-            {
-                var resposta = new LivroResponseDto(
-                    livro.Id,
-                    livro.Titulo!,
-                    livro.Autor!,
-                    livro.Preco,
-                    livro.Descricao,
-                    livro.DataCriacao,
-                    livro.Ativo
-                );
-                return Ok(resposta);
-            }
-            return NotFound("Livro não encontrado.");
+            var resultado = await usecases.ObterTodosAsync();
+            return resultado.IsSuccess ? Ok(resultado.Value) : BadRequest(resultado.ErrorMessage);
         }
 
         [HttpPost]
-        public async Task<IActionResult> Criar(LivroCreatDto dto)
+        public async Task<ActionResult> AdicionarAsync([FromBody] LivroCreatDto dto, [FromServices] LivroCriarUseCases useCase)
         {
-            // 1. Transformando o DTO na Entity (Entrada)
-            var novoLivro = new Livro
-            {
-                Titulo = dto.Titulo,
-                Autor = dto.Autor,
-                Preco = dto.Preco,
-                Descricao = dto.Descricao, // Não esqueça da descrição se ela existir no DTO!
-                UsuarioId = dto.UsuarioId,
-                Ativo = true
-            };
-
-            _context.Livros.Add(novoLivro);
-            await _context.SaveChangesAsync(); // A mágica da data e do Guid acontece aqui!
-
-            // 2. Transformando a Entity salva no ResponseDto (Saída)
-            // Agora o objeto 'novoLivro' já tem ID e DataCriacao preenchidos pelo banco/contexto
-            var resposta = new LivroResponseDto(
-                novoLivro.Id,
-                novoLivro.Titulo,
-                novoLivro.Autor,
-                novoLivro.Preco,
-                novoLivro.Descricao,
-                novoLivro.DataCriacao,
-                novoLivro.Ativo
-            );
-
-            // 3. Retorno Profissional
-            return CreatedAtAction(nameof(ObterPorId), new { id = resposta.Id }, resposta);
+            var resultado = await useCase.ExecutarAsync(dto);
+            return resultado.IsSuccess ? Ok(resultado.Value) : BadRequest(resultado.ErrorMessage);
         }
 
-        [HttpDelete]
-        public async Task<IActionResult> Deletar(Guid id)
+        [HttpGet("{id}")]
+        public async Task<ActionResult> ObterPorIdAsync(Guid id, [FromServices] LivroObterPorIdUseCases useCase)
         {
-            var livro = await _context.Livros.FindAsync(id);
-            if (livro is not null)
-            {
-                _context.Livros.Remove(livro);
-                await _context.SaveChangesAsync();
-                return NoContent();
-            }
-            return NotFound("Livro não encontrado.");
+            var resultado = await useCase.ExecutarAsync(id);
+            return resultado.IsSuccess ? Ok(resultado.Value) : NotFound(resultado.ErrorMessage);
         }
 
         [HttpPut]
-        public async Task<IActionResult> Atualizar(LivroUpdateDto dto)
+        public async Task<ActionResult> AtualizarAsync([FromBody] LivroUpdateDto dto, [FromServices] LivroAtualizarUsesCase useCase)
         {
-            var livro = await _context.Livros.FindAsync(dto.Id);
+            var resultado = await useCase.ExecutarAsync(dto);
+            return resultado.IsSuccess ? Ok(resultado.Value) : BadRequest(resultado.ErrorMessage);
+        }
 
-            if (livro is not null)
-            {
-                livro.Titulo = dto.Titulo;
-                livro.Autor = dto.Autor;
-                livro.Preco = dto.Preco;
-                livro.Descricao = dto.Descricao;
-                livro.Ativo = dto.Ativo;
+        [HttpDelete("{id}")]
+        public async Task<ActionResult> DeletarAsync(Guid id, [FromServices] LivroDeletarUseCases useCase)
+        {
+            var resultado = await useCase.ExecutarAsync(id);
 
-                await _context.SaveChangesAsync();
-                return NoContent();
-            }
-            return NotFound("Livro não encontrado.");
+            // Em vez de NoContent (204), usamos Ok (200) enviando o DTO que você buscou no UseCase
+            return resultado.IsSuccess
+                ? Ok(new { Mensagem = "Livro removido com sucesso!", Dados = resultado.Value })
+                : NotFound(new { Erro = resultado.ErrorMessage });
         }
     }
 }

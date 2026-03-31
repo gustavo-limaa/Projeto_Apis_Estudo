@@ -1,4 +1,6 @@
 ﻿using Cadastro.Intefaces;
+using Cadastro.Modelos.Enums;
+using Cadastro.Modelos.ValueObjects;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -13,15 +15,19 @@ public class Livro : EntidadeBase, IStatus
     public string? Autor { get; set; }
 
     [Required]
-    public decimal Preco { get; set; } // Para praticar tipos numéricos
+    public ValorMonetario Preco { get; set; } = new();
 
+    [Required]
     public string? Descricao { get; set; }
 
+    // Adição da Categoria
+    [Required]
+    public CategoriaLivro Categoria { get; set; }
+
     [ForeignKey("UsuarioId")]
-    public Guid UsuarioId { get; set; } // Para praticar relacionamentos entre entidades
+    public Guid UsuarioId { get; set; }
 
     public bool Ativo { get; set; } = true;
 
-    [ForeignKey("UsuarioId")]
-    public virtual Usuario Usuario { get; set; }
+    public virtual Usuario? Usuario { get; set; }
 }

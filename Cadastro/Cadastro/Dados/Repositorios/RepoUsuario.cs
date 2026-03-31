@@ -5,7 +5,7 @@ using Cadastro.Modelos;
 using Cadastro.Modelos.Mapper;
 using Microsoft.EntityFrameworkCore; // OBRIGATÓRIO para métodos Async do banco
 
-namespace Cadastro.Repositorios;
+namespace Cadastro.Dados.Repositorios;
 
 public class RepoUsuario : IRepositorioUsuario
 {

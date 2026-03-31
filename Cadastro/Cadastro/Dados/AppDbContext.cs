@@ -35,7 +35,19 @@ namespace Cadastro.Dados
                 .HasOne(l => l.Usuario)
                 .WithMany(u => u.Livros)
                 .HasForeignKey(l => l.UsuarioId)
-                .OnDelete(DeleteBehavior.Cascade); // Se deletar o usuário, deleta os livros dele
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // 1. Configurar o Value Object de Preço no Livro
+            modelBuilder.Entity<Livro>(entity =>
+            {
+                entity.OwnsOne(l => l.Preco, p =>
+                {
+                    p.Property(v => v.Valor)
+                     .HasColumnName("Preco") // Nome da coluna no MySQL
+                     .HasPrecision(18, 2)    // Importante para dinheiro!
+                     .IsRequired();
+                });
+            }); // Se deletar o usuário, deleta os livros dele
 
             base.OnModelCreating(modelBuilder);
         }
