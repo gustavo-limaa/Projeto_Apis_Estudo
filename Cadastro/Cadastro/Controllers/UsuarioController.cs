@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace Cadastro.Controller
+namespace Cadastro.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]

@@ -5,9 +5,13 @@ using Cadastro.UseCases.LivrosCases;
 using Cadastro.UseCases.LoginCases;
 using Cadastro.UseCases.UsuarioCases;
 using Microsoft.EntityFrameworkCore;
+using Cadastro.Controllers;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddControllers();
+
+// Mantenha APENAS esta chamada com o AddApplicationPart
+builder.Services.AddControllers()
+    .AddApplicationPart(typeof(LivrosController).Assembly);
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -15,12 +19,13 @@ builder.Services.AddSwaggerGen();
 // No Program.cs// 1. Pega a string de conexão das configurações
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-// 2. Substitui o UseInMemoryDatabase por este bloco:
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseMySql(
-        connectionString,
-        ServerVersion.AutoDetect(connectionString) // Deixa o Pomelo descobrir a versão do seu MySQL
-    ));
+{
+    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+    // Em vez de ServerVersion.AutoDetect(connectionString)
+    var serverVersion = new MySqlServerVersion(new Version(8, 0, 30)); // Ou a versão do seu MySQL
+    options.UseMySql(connectionString, serverVersion);
+});
 
 builder.Services.AddScoped<IRepositorioUsuario, RepoUsuario>();
 builder.Services.AddScoped<IRepositorioLivros, RepoLivro>();
@@ -38,9 +43,10 @@ builder.Services.AddScoped<LivroObterTodosUsecases>();
 
 // Add services to the container.
 
-builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+
+builder.Services.Configure<RouteOptions>(options => options.LowercaseUrls = true);
 
 var app = builder.Build();
 
@@ -52,10 +58,15 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
 app.MapControllers();
-
+app.MapGet("/ping", () => Results.Ok("pong")); // O nosso teste de sanidade
 app.Run();
+
+public partial class Program
+
+
+{ } // Adicione esta linha para permitir testes de integração

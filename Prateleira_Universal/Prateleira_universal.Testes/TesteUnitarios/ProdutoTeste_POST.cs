@@ -96,4 +96,6 @@ public class ProdutoTeste_POST
         await act.Should().ThrowAsync<ArgumentException>()
               .WithMessage("*Nome*");
     }
+
+    
 }

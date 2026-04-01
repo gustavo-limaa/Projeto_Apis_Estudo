@@ -1,3 +1,4 @@
 <Solution>
+  <Project Path="Cadastro.Testes/Cadastro.Testes.csproj" Id="4f9deb6e-e5aa-488a-917a-30b0a8f2a683" />
   <Project Path="Cadastro/Cadastro.csproj" />
 </Solution>
