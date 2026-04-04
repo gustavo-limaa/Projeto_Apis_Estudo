@@ -22,6 +22,7 @@ public class RepoUsuario : IRepositorioUsuario
         {
             throw new ArgumentNullException(nameof(usuario));
         }
+
         _context.Usuarios.Add(usuario);
 
         var salvar = _context.SaveChanges();
@@ -100,6 +101,7 @@ public class RepoUsuario : IRepositorioUsuario
         {
             throw new Exception("Usuário não encontrado.");
         }
+
         return usuario;
     }
 
@@ -108,5 +110,18 @@ public class RepoUsuario : IRepositorioUsuario
         // O EF Core vai lá na tabela de Usuarios e traz o primeiro que bater o e-mail
         return await _context.Usuarios
             .FirstOrDefaultAsync(u => u.Email.Valor == email);
+    }
+
+    // No Repositório de Usuário
+    public async Task<bool> AlterarStatusAsync(Guid id)
+    {
+        var usuario = await _context.Usuarios.FindAsync(id);
+
+        if (usuario == null) return false; // Ou joga uma exception
+
+        usuario.Ativo = !usuario.Ativo; // Inverte o status
+        await _context.SaveChangesAsync();
+
+        return usuario.Ativo;
     }
 }

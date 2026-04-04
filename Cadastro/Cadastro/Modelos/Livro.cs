@@ -8,6 +8,22 @@ namespace Cadastro.Modelos;
 
 public class Livro : EntidadeBase, IStatus
 {
+    public Livro(string? titulo, string? autor, ValorMonetario preco, string? descricao, CategoriaLivro categoria, Guid usuarioId, bool ativo, Usuario? usuario)
+    {
+        Titulo = titulo;
+        Autor = autor;
+        Preco = preco;
+        Descricao = descricao;
+        Categoria = categoria;
+        UsuarioId = usuarioId;
+        Ativo = ativo;
+        Usuario = usuario;
+    }
+
+    public Livro()
+    {
+    }
+
     [Required]
     public string? Titulo { get; set; }
 

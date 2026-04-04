@@ -5,6 +5,20 @@ namespace Cadastro.Modelos;
 
 public class Usuario : EntidadeBase, IStatus
 {
+    public Usuario(Guid id, string? nome, string? senha, ValueEmail? email, bool ativo, ICollection<Livro> livros)
+    {
+        Id = id;
+        Nome = nome;
+        Senha = senha;
+        Email = email;
+        Ativo = ativo;
+        Livros = livros;
+    }
+
+    public Usuario()
+    {
+    }
+
     [Required]
     [Key]
     public Guid Id { get; set; } = Guid.NewGuid();

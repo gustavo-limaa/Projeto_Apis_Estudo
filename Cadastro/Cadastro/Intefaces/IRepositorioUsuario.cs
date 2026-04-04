@@ -16,5 +16,7 @@ namespace Cadastro.Intefaces
         Task<Usuario> DeletarAsync(Guid id);
 
         Task<Usuario?> ObterPorEmailAsync(string email);
+
+        Task<bool> AlterarStatusAsync(Guid id);
     }
 }

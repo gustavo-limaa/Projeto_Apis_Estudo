@@ -6,6 +6,9 @@ using Cadastro.UseCases.LoginCases;
 using Cadastro.UseCases.UsuarioCases;
 using Microsoft.EntityFrameworkCore;
 using Cadastro.Controllers;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +18,22 @@ builder.Services.AddControllers()
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(builder.Configuration["JwtSettings:Secret"])),
+        ValidateIssuer = false,
+        ValidateAudience = false
+    };
+});
 
 // No Program.cs// 1. Pega a string de conexão das configurações
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -40,6 +59,8 @@ builder.Services.AddScoped<LivroAtualizarUsesCase>();
 builder.Services.AddScoped<LivroObterPorIdUseCases>();
 builder.Services.AddScoped<LivroDeletarUseCases>();
 builder.Services.AddScoped<LivroObterTodosUsecases>();
+builder.Services.AddScoped<ITokenRepositorio, RepoToken>();
+builder.Services.AddScoped<LoginUsuarioUseCase>();
 
 // Add services to the container.
 
@@ -60,7 +81,8 @@ if (app.Environment.IsDevelopment())
 
 //app.UseHttpsRedirection();
 
-app.UseAuthorization();
+app.UseAuthentication(); // 1. Verifica o Token (Quem é você?)
+app.UseAuthorization();  // 2. Verifica as permissões (Você pode deletar?)
 
 app.MapControllers();
 app.MapGet("/ping", () => Results.Ok("pong")); // O nosso teste de sanidade

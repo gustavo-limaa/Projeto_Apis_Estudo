@@ -3,31 +3,45 @@ using Cadastro.Dtos.UsuarioDtos;
 using Cadastro.Intefaces;
 using Cadastro.Modelos.Erro;
 using Cadastro.Modelos.Mapper;
+using Org.BouncyCastle.Crypto.Generators;
+using BCrypt.Net;
 
-namespace Cadastro.UseCases.LoginCases
+namespace Cadastro.UseCases.LoginCases;
+
+public class LoginUsuarioUseCase
 {
-    public class LoginUsuarioUseCase
+    private readonly IRepositorioUsuario _repoUsuario;
+    private readonly ITokenRepositorio _tokenRepo;
+
+    public LoginUsuarioUseCase(IRepositorioUsuario repoUsuario, ITokenRepositorio tokenRepo)
     {
-        private readonly IRepositorioUsuario _repositorioUsuario;
+        _repoUsuario = repoUsuario;
+        _tokenRepo = tokenRepo;
+    }
 
-        public LoginUsuarioUseCase(IRepositorioUsuario repositorioUsuario)
+    public async Task<Result<LoginResponseDto>> ExecutarAsync(LoginDto loginData)
+    {
+        // 1. Busca o usuário pelo VO de Email (assumindo que seu repo aceita string ou converte)
+        var usuario = await _repoUsuario.ObterPorEmailAsync(loginData.Email);
+
+        if (usuario == null)
+            return Result<LoginResponseDto>.Failure("E-mail ou senha incorretos.");
+
+        // 2. Validação de Senha (IMPORTANTE: Use BCrypt aqui se as senhas estiverem hasheadas)
+        // Se ainda estiver em texto puro para teste: if (usuario.Senha != loginData.Senha)
+        if (!BCrypt.Net.BCrypt.Verify(loginData.Senha, usuario.Senha))
         {
-            _repositorioUsuario = repositorioUsuario;
+            return Result<LoginResponseDto>.Failure("E-mail ou senha incorretos.");
         }
 
-        public async Task<Result<UsuarioResponseDto>> ExecutarAsync(LoginDto dto)
-        {
-            // 1. Usamos o Repositorio de USUÁRIO para buscar o dono do e-mail
-            var usuario = await _repositorioUsuario.ObterPorEmailAsync(dto.Email);
+        // 3. Gera o Token usando o seu RepoToken
+        var token = _tokenRepo.GerarToken(usuario);
 
-            // 2. Se o usuário não existe ou a senha não bate...
-            if (usuario == null || usuario.Senha != dto.Senha)
-            {
-                return Result<UsuarioResponseDto>.Failure("E-mail ou senha inválidos.");
-            }
-
-            // 3. Se deu certo, o 'usuario' (Entidade) vira 'ResponseDto' (Saída)
-            return Result<UsuarioResponseDto>.Success(usuario.ToResponseDto());
-        }
+        // 4. Retorna o DTO de resposta
+        return Result<LoginResponseDto>.Success(new LoginResponseDto(
+            usuario.Email.Valor,
+            token,
+            "Login realizado com sucesso!"
+        ));
     }
 }

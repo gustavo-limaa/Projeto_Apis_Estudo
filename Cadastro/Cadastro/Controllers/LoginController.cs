@@ -14,20 +14,17 @@ public class LoginController : ControllerBase
     }
 
     [HttpPost("login")]
-    public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
+    public async Task<ActionResult<LoginResponseDto>> Login([FromBody] LoginDto loginDto)
     {
         var resultado = await _loginUseCase.ExecutarAsync(loginDto);
 
         if (!resultado.IsSuccess)
         {
-            // Unauthorized (401) é o código correto para erro de login
             return Unauthorized(new { Message = resultado.ErrorMessage });
         }
 
-        return Ok(new
-        {
-            Mensagem = "Login realizado com sucesso!",
-            Usuario = resultado.Value
-        });
+        // Como resultado.Value é um LoginResponseDto,
+        // o ASP.NET faz o "match" automático com o ActionResult<LoginResponseDto>
+        return Ok(resultado.Value);
     }
 }

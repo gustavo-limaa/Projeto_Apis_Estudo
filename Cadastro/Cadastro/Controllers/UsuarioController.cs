@@ -2,12 +2,14 @@
 using Cadastro.Dtos.UsuarioDtos;
 using Cadastro.Modelos;
 using Cadastro.UseCases.UsuarioCases;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace Cadastro.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class UsuarioController : ControllerBase
@@ -34,6 +36,7 @@ namespace Cadastro.Controllers
             _deletarUsuarioUseCases = deletarUsuarioUseCases;
         }
 
+        [AllowAnonymous]
         [HttpGet("{id}")]
         public async Task<IActionResult> ObterPorId(Guid id)
         {
@@ -89,6 +92,7 @@ namespace Cadastro.Controllers
             );
         }
 
+        [AllowAnonymous]
         [HttpGet]
         public async Task<IActionResult> ListarTodos()
         {

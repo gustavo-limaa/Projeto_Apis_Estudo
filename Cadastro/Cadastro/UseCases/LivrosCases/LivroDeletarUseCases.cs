@@ -8,32 +8,35 @@ namespace Cadastro.UseCases.LivrosCases
     public class LivroDeletarUseCases
     {
         private readonly IRepositorioLivros _repoLivro;
+        private readonly IRepositorioUsuario _usuario;
 
         public LivroDeletarUseCases(IRepositorioLivros repoLivro)
         {
             _repoLivro = repoLivro;
         }
 
-        public async Task<Result<LivroResponseDto>> ExecutarAsync(Guid id)
+        // Adicione o parâmetro usuarioLogadoId
+        public async Task<Result<LivroResponseDto>> ExecutarAsync(Guid id, Guid usuarioLogadoId)
         {
             if (id == Guid.Empty) return Result<LivroResponseDto>.Failure("ID inválido.");
 
-            // 1. Busca o livro antes de deletar para ter os dados (Nome, Autor, etc)
             var livro = await _repoLivro.ObterPorIdAsync(id);
 
             if (livro == null)
-                return Result<LivroResponseDto>.Failure("Livro não encontrado para deleção.");
+                return Result<LivroResponseDto>.Failure("Livro não encontrado.");
 
-            // 2. Transforma em DTO agora (antes de deletar a entidade)
+            // A TRAVA: Compara o dono do livro com quem está tentando deletar
+            if (livro.UsuarioId != usuarioLogadoId)
+            {
+                return Result<LivroResponseDto>.Failure("Você não tem permissão para deletar este livro.");
+            }
+
             var respostaDto = livro.ToResponseDto();
-
-            // 3. Manda o Repositório apagar
             bool deletado = await _repoLivro.DeletarAsync(id);
 
             if (!deletado)
-                return Result<LivroResponseDto>.Failure("Erro técnico ao tentar excluir o livro.");
+                return Result<LivroResponseDto>.Failure("Erro técnico ao tentar excluir.");
 
-            // 4. Retorna o DTO! Agora o Controller tem o Nome e o ID para avisar o usuário.
             return Result<LivroResponseDto>.Success(respostaDto);
         }
     }
