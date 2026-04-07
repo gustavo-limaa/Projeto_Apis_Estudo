@@ -1,3 +1,4 @@
+using Cadastro;
 using Cadastro.Controllers;
 using Cadastro.Dados;
 using Cadastro.Dados.Repositorios;
@@ -8,12 +9,12 @@ using Cadastro.UseCases.LoginCases;
 using Cadastro.UseCases.LoginCases.Validacoes;
 using Cadastro.UseCases.UsuarioCases;
 using FluentValidation;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 
 using FluentValidation;
 
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -52,32 +53,21 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseMySql(connectionString, serverVersion);
 });
 
-builder.Services.AddScoped<IRepositorioUsuario, RepoUsuario>();
-builder.Services.AddScoped<IRepositorioLivros, RepoLivro>();
-builder.Services.AddScoped<CriarUsuarioUseCase>();
-builder.Services.AddScoped<AtualizarUsuarioUseCases>();
-builder.Services.AddScoped<ObterPorIdUsuarioUseCases>();
-builder.Services.AddScoped<DeletarUsuarioUseCases>();
-builder.Services.AddScoped<ListarTodosUsuarioUseCases>();
-builder.Services.AddScoped<LoginUsuarioUseCase>();
-builder.Services.AddScoped<LivroCriarUseCases>();
-builder.Services.AddScoped<LivroAtualizarUsesCase>();
-builder.Services.AddScoped<LivroObterPorIdUseCases>();
-builder.Services.AddScoped<LivroDeletarUseCases>();
-builder.Services.AddScoped<LivroObterTodosUsecases>();
-builder.Services.AddScoped<ITokenRepositorio, RepoToken>();
-builder.Services.AddScoped<LoginUsuarioUseCase>();
-builder.Services.AddScoped<RefreshTokenUsesCases>();
-builder.Services.AddValidatorsFromAssemblyContaining<RefreshTokenValidator>();
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.AddServerHeader = false; // Remove o header "Server" para ocultar informações sobre o servidor
+});
 
 // Add services to the container.
-
+builder.Services.AddApplicationServices();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 builder.Services.Configure<RouteOptions>(options => options.LowercaseUrls = true);
 
 var app = builder.Build();
 
+app.UseHttpsRedirection();
+app.UseHsts();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
