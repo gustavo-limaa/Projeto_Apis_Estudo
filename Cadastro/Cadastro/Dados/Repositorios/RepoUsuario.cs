@@ -85,7 +85,7 @@ public class RepoUsuario : IRepositorioUsuario
 
         if (usuarios == null || !usuarios.Any())
         {
-            throw new Exception("Nenhum usuário encontrado.");
+            return await _context.Usuarios.ToListAsync(); // Retorna uma lista vazia em vez de null
         }
 
         return usuarios;
