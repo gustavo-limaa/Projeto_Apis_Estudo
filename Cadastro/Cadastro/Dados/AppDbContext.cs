@@ -48,6 +48,15 @@ namespace Cadastro.Dados
                      .IsRequired();
                 });
             }); // Se deletar o usuário, deleta os livros dele
+            modelBuilder.Entity<Usuario>(entity =>
+            {
+                // Configura o Value Object como "Owned" (pertence ao Usuário)
+                entity.OwnsOne(u => u.RefreshToken, rt =>
+                {
+                    rt.Property(t => t.Token).HasColumnName("RefreshToken");
+                    rt.Property(t => t.DataExpiracao).HasColumnName("RefreshTokenExpiration");
+                });
+            });
 
             base.OnModelCreating(modelBuilder);
         }

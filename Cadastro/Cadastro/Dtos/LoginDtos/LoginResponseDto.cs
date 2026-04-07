@@ -1,6 +1,9 @@
-﻿namespace Cadastro.Dtos.LoginDtos;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Cadastro.Dtos.LoginDtos;
 
 public record LoginResponseDto(
-    string Email,
-    string Token,
-    string Mensagem);
+   [Required] string Email,
+   [Required] string Token,
+  [Required] string refreshToken,
+ [Required] string Mensagem);

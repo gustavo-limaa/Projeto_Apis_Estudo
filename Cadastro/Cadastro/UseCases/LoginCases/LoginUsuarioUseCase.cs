@@ -5,6 +5,7 @@ using Cadastro.Modelos.Erro;
 using Cadastro.Modelos.Mapper;
 using Org.BouncyCastle.Crypto.Generators;
 using BCrypt.Net;
+using Cadastro.Modelos.ValueObjects;
 
 namespace Cadastro.UseCases.LoginCases;
 
@@ -37,10 +38,19 @@ public class LoginUsuarioUseCase
         // 3. Gera o Token usando o seu RepoToken
         var token = _tokenRepo.GerarToken(usuario);
 
+        var refreshToken = Guid.NewGuid().ToString(); // Exemplo simples, use um gerador mais robusto em produção
+
+        var tokenNovo = RefreshTokenValueObject.GerarNovo(7);
+
+        usuario.AtualizarRefreshToken(tokenNovo);
+
+        await _repoUsuario.SalvarAlteracoesAsync(usuario); // Salva o refresh token no banco
+
         // 4. Retorna o DTO de resposta
         return Result<LoginResponseDto>.Success(new LoginResponseDto(
             usuario.Email.Valor,
             token,
+            tokenNovo.Token,
             "Login realizado com sucesso!"
         ));
     }

@@ -124,4 +124,22 @@ public class RepoUsuario : IRepositorioUsuario
 
         return usuario.Ativo;
     }
+
+    public async Task<bool> SalvarAlteracoesAsync(Usuario usuario)
+    {
+        if (usuario == null) { return false; }
+
+        _context.Usuarios.Update(usuario);
+
+        return await _context.SaveChangesAsync() > 0;
+    }
+
+    public async Task<Usuario?> ObterPorRefreshTokenAsync(string refreshToken)
+    {
+        if (string.IsNullOrEmpty(refreshToken)) return null;
+
+        // O EF entende que RefreshToken.Token é a coluna no banco
+        return await _context.Usuarios
+            .FirstOrDefaultAsync(u => u.RefreshToken.Token == refreshToken);
+    }
 }

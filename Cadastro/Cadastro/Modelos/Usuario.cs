@@ -1,11 +1,12 @@
 ﻿using Cadastro.Intefaces;
+using Cadastro.Modelos.ValueObjects;
 using System.ComponentModel.DataAnnotations;
 
 namespace Cadastro.Modelos;
 
 public class Usuario : EntidadeBase, IStatus
 {
-    public Usuario(Guid id, string? nome, string? senha, ValueEmail? email, bool ativo, ICollection<Livro> livros)
+    public Usuario(Guid id, string? nome, string? senha, ValueEmail? email, bool ativo, ICollection<Livro> livros, RefreshTokenValueObject? refreshToken)
     {
         Id = id;
         Nome = nome;
@@ -13,6 +14,7 @@ public class Usuario : EntidadeBase, IStatus
         Email = email;
         Ativo = ativo;
         Livros = livros;
+        RefreshToken = refreshToken;
     }
 
     public Usuario()
@@ -34,4 +36,11 @@ public class Usuario : EntidadeBase, IStatus
 
     [Required]
     public bool Ativo { get; set; } = true; public virtual ICollection<Livro> Livros { get; set; } = new List<Livro>();
+
+    public RefreshTokenValueObject? RefreshToken { get; private set; }
+
+    public void AtualizarRefreshToken(RefreshTokenValueObject novoRefreshToken)
+    {
+        RefreshToken = novoRefreshToken;
+    }
 }

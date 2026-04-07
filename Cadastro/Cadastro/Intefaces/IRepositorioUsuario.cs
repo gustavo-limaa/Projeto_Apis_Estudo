@@ -17,6 +17,10 @@ namespace Cadastro.Intefaces
 
         Task<Usuario?> ObterPorEmailAsync(string email);
 
+        Task<bool> SalvarAlteracoesAsync(Usuario usuario);
+
+        Task<Usuario?> ObterPorRefreshTokenAsync(string refreshToken);
+
         Task<bool> AlterarStatusAsync(Guid id);
     }
 }

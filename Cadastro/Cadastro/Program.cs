@@ -1,13 +1,19 @@
+using Cadastro.Controllers;
 using Cadastro.Dados;
 using Cadastro.Dados.Repositorios;
+using Cadastro.Dtos.LoginDtos;
 using Cadastro.Intefaces;
 using Cadastro.UseCases.LivrosCases;
 using Cadastro.UseCases.LoginCases;
+using Cadastro.UseCases.LoginCases.Validacoes;
 using Cadastro.UseCases.UsuarioCases;
-using Microsoft.EntityFrameworkCore;
-using Cadastro.Controllers;
+using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+
+using FluentValidation;
+
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -61,12 +67,13 @@ builder.Services.AddScoped<LivroDeletarUseCases>();
 builder.Services.AddScoped<LivroObterTodosUsecases>();
 builder.Services.AddScoped<ITokenRepositorio, RepoToken>();
 builder.Services.AddScoped<LoginUsuarioUseCase>();
+builder.Services.AddScoped<RefreshTokenUsesCases>();
+builder.Services.AddValidatorsFromAssemblyContaining<RefreshTokenValidator>();
 
 // Add services to the container.
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
-
 builder.Services.Configure<RouteOptions>(options => options.LowercaseUrls = true);
 
 var app = builder.Build();
